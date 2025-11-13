@@ -3,6 +3,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Instala ping na imagem base
+RUN apt-get update && apt-get install -y iputils-ping
+
+
 # Instalar dependências Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

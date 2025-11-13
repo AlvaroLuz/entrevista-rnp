@@ -21,6 +21,22 @@ services:
       - type: volume
         source: influxdb2-config
         target: /etc/influxdb2
+  agent:
+    build: ./agent
+    environment:
+      INFLUX_URL: http://127.0.0.1:8086
+      INFLUX_ORG: docs
+      INFLUX_BUCKET: home
+      INFLUX_TOKEN_FILE: /run/secrets/influxdb2-admin-token
+      AGENT_ID: agent01
+      AGENT_TARGETS: google.com
+      AGENT_DEBUG: True
+      AGENT_INTERVAL_SECONDS: 3
+    secrets:
+      - influxdb2-admin-token
+    depends_on:
+      - influxdb2
+
 secrets:
   influxdb2-admin-username:
     file: ./secrets/.env.influxdb2-admin-username
