@@ -29,7 +29,7 @@ services:
       INFLUX_BUCKET: home
       INFLUX_TOKEN: /run/secrets/influxdb2-admin-token
       AGENT_ID: agent01
-      AGENT_TARGETS: google.com
+      AGENT_TARGETS: google.com,youtube.com,rnp.br
       AGENT_DEBUG: True
       AGENT_INTERVAL_SECONDS: 3
     secrets:
@@ -49,6 +49,8 @@ services:
         - influxdb2
       volumes:
         - grafana-data:/var/lib/grafana
+        - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+        - ./grafana/provisioning:/etc/grafana/provisioning
       secrets:
         - grafana-admin-username
         - grafana-admin-password

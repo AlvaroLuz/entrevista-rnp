@@ -1,0 +1,347 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "RTT, Latência e HTTPStatus conforme URL",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bf44f71y8icjka"
+      },
+      "description": "histórico de latência do host",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bf44f71y8icjka"
+          },
+          "query": "from(bucket: \"home\")\r\n  |> range(start: -30d, stop: now())\r\n  |> filter(fn: (r) => r._measurement == \"network_metrics\")\r\n  |> filter(fn: (r) => r._field == \"ping_latency_ms\")\r\n  |> filter(fn: (r) =>  if (${host_url} != \"All\") then (r.host == ${host_url}) else true )",
+          "refId": "A"
+        }
+      ],
+      "title": "Historico de Latência",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bf44f71y8icjka"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "200": {
+                  "index": 0,
+                  "text": "Success"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bf44f71y8icjka"
+          },
+          "query": "from(bucket: \"home\")\r\n  |> range(start: -6h)\r\n  |> filter(fn: (r) =>\r\n      r._measurement == \"network_metrics\" and\r\n      r._field == \"http_status_code\"\r\n  )\r\n  |> map(fn: (r) => ({\r\n      r with http_status:\r\n        if r._value == 200 then \"OK\"\r\n        else if r._value == 301 then \"REDIRECT\"\r\n        else if r._value == 404 then \"NOT FOUND\"\r\n        else if r._value >= 500 then \"SERVER ERROR\"\r\n        else \"UNKNOWN\"\r\n  }))\r\n  |> keep(columns: [\"_time\", \"http_status\", \"host\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Status Http dos Hosts",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bf44f71y8icjka"
+      },
+      "description": "histórico de delay de resposta do host",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bf44f71y8icjka"
+          },
+          "query": "from(bucket: \"home\")\r\n  |> range(start: -30d, stop: now())\r\n  |> filter(fn: (r) => r._measurement == \"network_metrics\")\r\n  |> filter(fn: (r) => r._field == \"http_response_time_ms\")\r\n  |> filter(fn: (r) =>  if (${host_url} != \"All\") then (r.host == ${host_url}) else true )",
+          "refId": "A"
+        }
+      ],
+      "title": "Historico de Delay de Resposta",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": "\"All\"",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "description": "controla os dados de qual host você deseja visualizar",
+        "includeAll": true,
+        "label": "HostUrl",
+        "name": "host_url",
+        "options": [
+          {
+            "selected": false,
+            "text": "\"google.com\"",
+            "value": "\"google.com\""
+          },
+          {
+            "selected": false,
+            "text": "\"rnp.br\"",
+            "value": "\"rnp.br\""
+          },
+          {
+            "selected": false,
+            "text": "\"youtube.com\"",
+            "value": "\"youtube.com\""
+          }
+        ],
+        "query": "\"google.com\",\"rnp.br\",\"youtube.com\"",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Dados de rede conforme URL",
+  "uid": "adsl6b2",
+  "version": 6
+}
