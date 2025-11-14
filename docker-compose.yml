@@ -24,10 +24,10 @@ services:
   agent:
     build: ./agent
     environment:
-      INFLUX_URL: http://127.0.0.1:8086
+      INFLUX_URL: http://influxdb2:8086
       INFLUX_ORG: docs
       INFLUX_BUCKET: home
-      INFLUX_TOKEN_FILE: /run/secrets/influxdb2-admin-token
+      INFLUX_TOKEN: /run/secrets/influxdb2-admin-token
       AGENT_ID: agent01
       AGENT_TARGETS: google.com
       AGENT_DEBUG: True

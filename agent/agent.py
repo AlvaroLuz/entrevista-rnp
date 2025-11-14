@@ -2,11 +2,26 @@ import os
 import logging
 import time
 import requests
+import influxdb_client
 
 # --- Configuração do Agent ---
 TARGETS = os.getenv("AGENT_TARGETS", "google.com").split(",")
 INTERVAL_SECONDS = int(os.getenv("AGENT_INTERVAL_SECONDS", "60"))
 DEBUG = bool(os.getenv("AGENT_DEBUG"))
+
+# --- Configuração do InfluxDB ---
+#INFLUXDB_TOKEN = os.getenv("INFLUX_TOKEN")
+with open(os.getenv("INFLUX_TOKEN"), "r") as f:
+    INFLUXDB_TOKEN = f.read().strip()
+INFLUXDB_URL = os.getenv("INFLUX_URL", "http://localhost:8086")
+INFLUXDB_ORG = os.getenv("INFLUX_ORG")
+INFLUXDB_BUCKET = os.getenv("INFLUX_BUCKET")
+
+client = influxdb_client.InfluxDBClient(
+    url=INFLUXDB_URL,
+    token=INFLUXDB_TOKEN,
+    org=INFLUXDB_ORG
+)
 
 # --- Configuração do logger ---
 def setup_logger():
@@ -62,11 +77,22 @@ def check_http(url: str) -> tuple:
     return duration, r.status_code
     
 def main():
+    write_api = client.write_api()
     while True:
         for host in TARGETS:
             latency = ping_host(host)
             http_time, http_code = check_http(host)
             logger.info(f"{host} - Ping: {latency} ms, HTTP: {http_time} ms, Status: {http_code}")
+            # Gravação no InfluxDB
+            point =  influxdb_client.Point("network_metrics") \
+                .tag("host", host) \
+                .field("ping_latency_ms", latency if latency is not None else 0) \
+                .field("http_response_time_ms", http_time if http_time is not None else 0) \
+                .field("http_status_code", http_code if http_code is not None else 0)
+            write_api.write(
+                bucket=INFLUXDB_BUCKET, 
+                org=INFLUXDB_ORG, 
+                record=point)
 
         time.sleep(INTERVAL_SECONDS)
 
