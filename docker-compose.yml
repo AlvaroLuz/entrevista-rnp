@@ -49,8 +49,6 @@ services:
         - influxdb2
       volumes:
         - grafana-data:/var/lib/grafana
-        - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-        - ./grafana/provisioning:/etc/grafana/provisioning
       secrets:
         - grafana-admin-username
         - grafana-admin-password
