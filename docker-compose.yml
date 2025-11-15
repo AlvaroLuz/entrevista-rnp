@@ -30,7 +30,7 @@ services:
       INFLUX_TOKEN: /run/secrets/influxdb2-admin-token
       AGENT_ID: agent01
       AGENT_TARGETS: google.com,youtube.com,rnp.br
-      AGENT_DEBUG: True
+      AGENT_DEBUG: "True"
       AGENT_INTERVAL_SECONDS: 3
     secrets:
       - influxdb2-admin-token
@@ -57,15 +57,15 @@ services:
 
 secrets:
   influxdb2-admin-username:
-    file: ./secrets/.env.influxdb2-admin-username
+    file: ./secrets/influxdb_admin_username
   influxdb2-admin-password:
-    file: ./secrets/.env.influxdb2-admin-password
+    file: ./secrets/influxdb_admin_password
   influxdb2-admin-token:
-    file: ./secrets/.env.influxdb2-admin-token
+    file: ./secrets/influxdb_admin_token
   grafana-admin-username:
-    file: ./secrets/.env.grafana-admin-username
+    file: ./secrets/grafana_admin_username
   grafana-admin-password:
-    file: ./secrets/.env.grafana-admin-password
+    file: ./secrets/grafana_admin_password
 
 volumes:
   influxdb2-data:
