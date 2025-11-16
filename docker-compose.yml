@@ -38,20 +38,26 @@ services:
       - influxdb2
 
   grafana:
-      image: grafana/grafana:latest
-      container_name: grafana
-      ports:
-        - "3000:3000"
-      environment:
-        - GF_SECURITY_ADMIN_USER__FILE=/run/secrets/grafana-admin-username
-        - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana-admin-password
-      depends_on:
-        - influxdb2
-      volumes:
-        - grafana-data:/var/lib/grafana
-      secrets:
-        - grafana-admin-username
-        - grafana-admin-password
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER__FILE=/run/secrets/grafana-admin-username
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana-admin-password
+      - INFLUX_TOKEN_FILE=/run/secrets/influxdb2-admin-token
+    depends_on:
+      - influxdb2
+    entrypoint: /grafana-entrypoint.sh
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/grafana-entrypoint.sh:/grafana-entrypoint.sh
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    secrets:
+      - grafana-admin-username
+      - grafana-admin-password
+      - influxdb2-admin-token
+
 
 secrets:
   influxdb2-admin-username:
